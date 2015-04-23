@@ -1,0 +1,24 @@
+#!/bin/bash
+if [[ -z "$WEB_URL" ]]; then
+    echo "You must add \"-e WEB_URL=<some port>\" when running this" >&2
+    exit 1
+fi
+
+if [[ -z "$WEBSOCKET_URL" ]]; then
+    echo "No WEBSOCKET_URL provided, using $WEB_URL"
+    export WEBSOCKET_URL=$WEB_URL
+fi
+
+if [[ -z "$WEBSOCKET_LOCATION" ]]; then
+  echo "No WEBSOCKET_LOCATION provided, defaulting to /bokeh/sub"
+  export WEBSOCKET_LOCATION="/bokeh/sub"
+fi
+
+
+/bin/sed -i "s/XXX_WEB_URL_XXX/$WEB_URL/" /etc/nginx/nginx.conf
+/bin/sed -i "s/XXX_WEBSOCKET_URL_XXX/$WEBSOCKET_URL/" /etc/nginx/nginx.conf
+/bin/sed -i "s@XXX_WEBSOCKET_LOCATION_XXX@$WEBSOCKET_LOCATION@" /etc/nginx/nginx.conf
+
+echo "Proxying HTTP connections to $WEB_URL"
+echo "Proxying WebSocket connections to ${WEBSOCKET_URL}${WEBSOCKET_LOCATION}"
+nginx
